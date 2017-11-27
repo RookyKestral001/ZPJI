@@ -6,7 +6,7 @@ classdef Uno < handle
         
         rule1Amp = 0.5;
         rule2Amp = 2;
-        rule3Amp = 1000;
+        rule3Amp = 10;
         
         id
         x
@@ -143,6 +143,12 @@ classdef Uno < handle
         
         function [v3, w3] = rule3(obj) %ËÙ¶ÈÆ¥Åä
             if (obj.vNeighborAverage ~= 0)&&(obj.wNeighborAverage ~= 0)
+%                 averNorm = sqrt((obj.vNeighborAverage)^2 + (obj.wNeighborAverage)^2);
+%                 vAverDire = obj.vNeighborAverage/averNorm;
+%                 wAverDire = obj.wNeighborAverage/averNorm;
+%                 uavNorm = sqrt((obj.v)^2 + (obj.w)^2);
+%                 vDire = obj.v/uavNorm;
+%                 wDire = obj.w/uavNorm;
                 v3 = (obj.vNeighborAverage - obj.v)/obj.rule3Amp;
                 w3 = (obj.wNeighborAverage - obj.w)/obj.rule3Amp;
             else
