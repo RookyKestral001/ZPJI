@@ -30,7 +30,9 @@ classdef Flock < handle
             %画出速度矢量
             for i = 1:obj.n
                 hold on
-                quiver(obj.uavs(i).x, obj.uavs(i).y, obj.uavs(i).v, obj.uavs(i).w, 0.1);
+                vx = obj.uavs(i).v*cos(obj.uavs(i).w);
+                vy = obj.uavs(i).v*sin(obj.uavs(i).w);
+                quiver(obj.uavs(i).x, obj.uavs(i).y, vx, vy, 0.1);
             end
         end
         
@@ -63,22 +65,31 @@ classdef Flock < handle
 %             A = zeros(n,10)
 %             
 %         end
-        
+       
         function updateAll(obj)
             for i = 1:obj.n
                 [v1, w1] = obj.uavs(i).rule1(); %rule1
                 [v2, w2] = obj.uavs(i).rule2(); %rule2
                 [v3, w3] = obj.uavs(i).rule3(); %rule3
                 
-                obj.uavs(i).v = obj.uavs(i).v + v1 + v2 + v3;
-                obj.uavs(i).w = obj.uavs(i).w + w1 + w2 + w3;
+                [vx1, vy1] = transa(v1, w1);
+                [vx2, vy2] = transa(v2, w2);
                 
-                obj.uavs(i).x = obj.uavs(i).x + obj.uavs(i).v;
-                obj.uavs(i).y = obj.uavs(i).y + obj.uavs(i).w;
+                [vxi, vyi] = transa(obj.uavs(i).v, obj.uavs(i).w);
+                
+                vxi = vxi + vx1 + vx2;
+                vyi = vyi + vy1 + vy2;
+                
+                [vi, wi] = transb(vxi, vyi);
+                wi = wi + w3;
+                [vxi, vyi] = transa(vi, wi);
+                
+                obj.uavs(i).x = obj.uavs(i).x + vxi;
+                obj.uavs(i).y = obj.uavs(i).y + vyi;
             end
             
-            obj.uavs(i).xDest = obj.uavs(i).xDest + obj.uavs(i).vDest;
-            obj.uavs(i).yDest = obj.uavs(i).yDest + obj.uavs(i).wDest;
+            obj.uavs(i).xDest = obj.uavs(i).xDest + obj.uavs(i).vxDest;
+            obj.uavs(i).yDest = obj.uavs(i).yDest + obj.uavs(i).vyDest;
         end
         
         function calcMass(obj)
