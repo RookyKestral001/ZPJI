@@ -30,9 +30,7 @@ classdef Flock < handle
             %画出速度矢量
             for i = 1:obj.n
                 hold on
-                vx = obj.uavs(i).v*cos(obj.uavs(i).w);
-                vy = obj.uavs(i).v*sin(obj.uavs(i).w);
-                quiver(obj.uavs(i).x, obj.uavs(i).y, vx, vy, 0.1);
+                quiver(obj.uavs(i).x, obj.uavs(i).y, obj.uavs(i).vx, obj.uavs(i).vy, 0.1);
             end
         end
         
@@ -68,24 +66,21 @@ classdef Flock < handle
        
         function updateAll(obj)
             for i = 1:obj.n
-                [v1, w1] = obj.uavs(i).rule1(); %rule1
-                [v2, w2] = obj.uavs(i).rule2(); %rule2
+                [vx1, vy1] = obj.uavs(i).rule1(); %rule1
+                [vx2, vy2] = obj.uavs(i).rule2(); %rule2
                 [v3, w3] = obj.uavs(i).rule3(); %rule3
                 
-                [vx1, vy1] = transa(v1, w1);
-                [vx2, vy2] = transa(v2, w2);
+                obj.uavs(i).vx = obj.uavs(i).vx + vx1 + vx2;
+                obj.uavs(i).vy = obj.uavs(i).vy + vy1 + vy2;
                 
-                [vxi, vyi] = transa(obj.uavs(i).v, obj.uavs(i).w);
+                [obj.uavs(i).v, obj.uavs(i).w] = transb(obj.uavs(i).vx, obj.uavs(i).vy);
+%                 obj.uavs(i).v = sqrt(
+%                 obj.uavs(i).w = atan(obj.uavs(i).vy/obj.uavs(i).vx) + w3;
+                obj.uavs(i).w = obj.uavs(i).w + w3;
+                [obj.uavs(i).vx, obj.uavs(i).vy] = transa(obj.uavs(i).v, obj.uavs(i).w);
                 
-                vxi = vxi + vx1 + vx2;
-                vyi = vyi + vy1 + vy2;
-                
-                [vi, wi] = transb(vxi, vyi);
-                wi = wi + w3;
-                [vxi, vyi] = transa(vi, wi);
-                
-                obj.uavs(i).x = obj.uavs(i).x + vxi;
-                obj.uavs(i).y = obj.uavs(i).y + vyi;
+                obj.uavs(i).x = obj.uavs(i).x + obj.uavs(i).vx;
+                obj.uavs(i).y = obj.uavs(i).y + obj.uavs(i).vy;
             end
             
             obj.uavs(i).xDest = obj.uavs(i).xDest + obj.uavs(i).vxDest;
