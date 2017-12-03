@@ -17,7 +17,7 @@ obj.Quality = 100; % ”∆µ÷ ¡ø£¨[0, 100]
 open(mov);
 tic
 
-flock0 = Flock(5);
+flock0 = Flock(10);
 % flock0.drawUAVs();
 % flock0.drawLinks();
     
