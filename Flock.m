@@ -68,14 +68,14 @@ classdef Flock < handle
             for i = 1:obj.n
                 [vx1, vy1] = obj.uavs(i).rule1(); %rule1
                 [vx2, vy2] = obj.uavs(i).rule2(); %rule2
-                [v3, w3] = obj.uavs(i).rule3(); %rule3
+                
                 
                 obj.uavs(i).vx = obj.uavs(i).vx + vx1 + vx2;
                 obj.uavs(i).vy = obj.uavs(i).vy + vy1 + vy2;
                 
                 [obj.uavs(i).v, obj.uavs(i).w] = transb(obj.uavs(i).vx, obj.uavs(i).vy);
-%                 obj.uavs(i).v = sqrt(
-%                 obj.uavs(i).w = atan(obj.uavs(i).vy/obj.uavs(i).vx) + w3;
+
+                [v3, w3] = obj.uavs(i).rule3(); %rule3
                 obj.uavs(i).w = obj.uavs(i).w + w3;
                 [obj.uavs(i).vx, obj.uavs(i).vy] = transa(obj.uavs(i).v, obj.uavs(i).w);
                 

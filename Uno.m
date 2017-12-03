@@ -1,11 +1,11 @@
 classdef Uno < handle
     properties
         disAmp = 1.7;
-        veloAmp = 4;
+        veloAmp = 5;
         radiAmp = 5;
         
-        rule1Amp = 0.5;
-        rule2Amp = 2;
+        rule1Amp = 1;
+        rule2Amp = 1;
         rule3Amp = 1;
         
         id
@@ -122,8 +122,8 @@ classdef Uno < handle
                 
         function [vx1, vy1] = rule1(obj) %Äý¾ÛÏòÐÄÐÔ
             if (obj.xNeighborAverage ~= 0)&&(obj.yNeighborAverage ~= 0)
-                vx1 = (obj.xNeighborAverage - obj.x)/obj.rule1Amp;
-                vy1 = (obj.yNeighborAverage - obj.y)/obj.rule1Amp;
+                vx1 = (obj.xNeighborAverage - obj.x)*obj.rule1Amp;
+                vy1 = (obj.yNeighborAverage - obj.y)*obj.rule1Amp;
 
             else
                 vx1 = 0;
@@ -136,8 +136,8 @@ classdef Uno < handle
             vy2 = 0;
             for i = 1:size(obj.neighborSet, 1)
                 if(obj.neighborSet(i,1) == 2)
-                    vx2 = vx2 + (obj.x - obj.neighborSet(i,2))/obj.rule2Amp;
-                    vy2 = vy2 + (obj.y - obj.neighborSet(i,3))/obj.rule2Amp;
+                    vx2 = vx2 + (obj.x - obj.neighborSet(i,2))*obj.rule2Amp;
+                    vy2 = vy2 + (obj.y - obj.neighborSet(i,3))*obj.rule2Amp;
                 end
             end
         end
