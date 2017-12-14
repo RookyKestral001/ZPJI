@@ -5,6 +5,8 @@ classdef Flock < handle
         n
         uavs
         A
+        
+        target
     end
     
     methods
@@ -13,6 +15,8 @@ classdef Flock < handle
             for i = 1:obj.n
                 obj.addUAV(Uno(i));
             end
+            %生成目标
+            obj.target = Objetivo(100, 50, 0, 0);
         end
         
         function addUAV(obj, uavObj)
@@ -26,7 +30,8 @@ classdef Flock < handle
             end
             %画出目标点
             hold on
-            plot(obj.uavs(i).xDest, obj.uavs(i).yDest, 'h'), xlabel('x'), ylabel('y'), title('Process');
+%             plot(obj.uavs(i).xDest, obj.uavs(i).yDest, 'h'), xlabel('x'), ylabel('y'), title('Process');
+            plot(obj.target.x, obj.target.y, 'h'), xlabel('x'), ylabel('y'), title('Process');
             %画出速度矢量
             for i = 1:obj.n
                 hold on
@@ -77,14 +82,17 @@ classdef Flock < handle
 
                 [v3, w3] = obj.uavs(i).rule3(); %rule3
                 obj.uavs(i).w = obj.uavs(i).w + w3;
+                
+                [v4, w4] = obj.uavs(i).rule4(obj.target); %rule4
+                obj.uavs(i).w = obj.uavs(i).w + w4;
                 [obj.uavs(i).vx, obj.uavs(i).vy] = transa(obj.uavs(i).v, obj.uavs(i).w);
                 
                 obj.uavs(i).x = obj.uavs(i).x + obj.uavs(i).vx;
                 obj.uavs(i).y = obj.uavs(i).y + obj.uavs(i).vy;
             end
             
-            obj.uavs(i).xDest = obj.uavs(i).xDest + obj.uavs(i).vxDest;
-            obj.uavs(i).yDest = obj.uavs(i).yDest + obj.uavs(i).vyDest;
+%             obj.uavs(i).xDest = obj.uavs(i).xDest + obj.uavs(i).vxDest;
+%             obj.uavs(i).yDest = obj.uavs(i).yDest + obj.uavs(i).vyDest;
         end
         
         function calcMass(obj)

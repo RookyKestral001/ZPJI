@@ -7,6 +7,7 @@ classdef Uno < handle
         rule1Amp = 1;
         rule2Amp = 1;
         rule3Amp = 1;
+        rule4Amp = 1;
         
         id
         x
@@ -19,12 +20,12 @@ classdef Uno < handle
         v
         w
         
-        xDest = 10;
-        yDest = 10;
-        vxDest = 3; 
-        vyDest = 3; 
+%         xDest = 10;
+%         yDest = 10;
+%         vxDest = 3; 
+%         vyDest = 3; 
         
-        neighborSet
+        neighborSet 
         neighborNum = 0;
         xNeighborTotal = 0;
         yNeighborTotal = 0;
@@ -152,12 +153,18 @@ classdef Uno < handle
 %                 wDire = obj.w/uavNorm;
 %                 v3 = (obj.vNeighborAverage - obj.v)/obj.rule3Amp;
                 v3 = 0;
-                w3 = (obj.wNeighborAverage - obj.w)/obj.rule3Amp;
+                w3 = (obj.wNeighborAverage - obj.w)*obj.rule3Amp;
 
             else
                 v3 = 0;
                 w3 = 0;
             end
+        end
+        
+        function [v4, w4] = rule4(obj, targ) %朝目标方向
+            v4 = 0;
+            wm = atan((targ.y - obj.y)/(targ.x - obj.x));
+            w4 = (wm - obj.w)*obj.rule4Amp;
         end
     end
 end
