@@ -16,7 +16,7 @@ classdef Flock < handle
                 obj.addUAV(Uno(i));
             end
             %生成目标
-            obj.target = Objetivo(100, 50, 0, 0);
+            obj.target = Objetivo(30, 30, 0, 0);
         end
         
         function addUAV(obj, uavObj)

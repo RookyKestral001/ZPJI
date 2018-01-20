@@ -5,7 +5,7 @@ clc;
 % figure;
 H = 900;
 W = 1600;
-Frames = 60;
+Frames = 10;
 
 % flock0 = Flock(10);
 % flock0.drawUAVs();
@@ -17,7 +17,7 @@ obj.Quality = 100; %视频质量，[0, 100]
 open(mov);
 tic
 
-flock0 = Flock(10);
+flock0 = Flock(3);
 % flock0.drawUAVs();
 % flock0.drawLinks();
     
@@ -37,7 +37,7 @@ for iRound = 1:Frames
     frame1 = getframe(gcf); %复制当前图形，gcf为get current figure，包括legend、title和label。不写gcf时默认为gca（axis）
 %     frame1.cdata = imresize(frame1.cdata, [H W]); %视频分辨率
     writeVideo(mov, frame1);
-    pause(0.2);
+    pause(0.5);
 end
 toc
 mov.close();

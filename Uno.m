@@ -1,13 +1,14 @@
 classdef Uno < handle
     properties
-        disAmp = 1.7;
-        veloAmp = 5;
-        radiAmp = 5;
+        disAmp = 3;
+        veloAmp = 2;
+        radiAmp = 3;
+        radiColiAmp = 1;
         
-        rule1Amp = 1;
-        rule2Amp = 1;
-        rule3Amp = 1;
-        rule4Amp = 1;
+        rule1Amp = 0.2;
+        rule2Amp = 0.8;
+        rule3Amp = 0.5;
+        rule4Amp = 0;
         
         id
         x
@@ -50,7 +51,7 @@ classdef Uno < handle
                 obj.vx = rand*obj.veloAmp;
                 obj.vy = rand*obj.veloAmp;
                 obj.r = 1*obj.radiAmp;
-                obj.rb = 1;
+                obj.rb = 1*obj.radiColiAmp;
             elseif nargin == 1
                 obj.id = id0;
                 obj.x = rand*obj.disAmp;
@@ -58,7 +59,7 @@ classdef Uno < handle
                 obj.vx = rand*obj.veloAmp;
                 obj.vy = rand*obj.veloAmp;
                 obj.r = 1*obj.radiAmp;
-                obj.rb = 1;
+                obj.rb = 1*obj.radiColiAmp;
             elseif nargin == 7
                 obj.id = id0;
                 obj.x = x0;
@@ -135,10 +136,22 @@ classdef Uno < handle
         function [vx2, vy2] = rule2(obj) %ÅÅ³âÐÔ
             vx2 = 0;
             vy2 = 0;
+
             for i = 1:size(obj.neighborSet, 1)
                 if(obj.neighborSet(i,1) == 2)
-                    vx2 = vx2 + (obj.x - obj.neighborSet(i,2))*obj.rule2Amp;
-                    vy2 = vy2 + (obj.y - obj.neighborSet(i,3))*obj.rule2Amp;
+%                     vx2 = vx2 + (obj.x - obj.neighborSet(i,2))*obj.rule2Amp;
+%                     vy2 = vy2 + (obj.y - obj.neighborSet(i,3))*obj.rule2Amp;
+                      signx = sign(obj.x - obj.neighborSet(i,2));
+                      signy = sign(obj.y - obj.neighborSet(i,3));
+                      absx = abs(obj.x - obj.neighborSet(i,2));
+                      absy = abs(obj.y - obj.neighborSet(i,3));
+                      d2 = sqrt(absx^2 + absy^2);
+                      if(d2 < obj.rb)
+                          sin2 = absy/d2;
+                          cos2 = absx/d2;
+                          vx2 = vx2 + signx*abs(absx - obj.rb*cos2)*obj.rule2Amp;
+                          vy2 = vy2 + signy*abs(absy - obj.rb*sin2)*obj.rule2Amp;
+                      end                          
                 end
             end
         end
