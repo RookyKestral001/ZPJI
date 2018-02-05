@@ -1,14 +1,14 @@
 classdef Uno < handle
     properties
         disAmp = 3;
-        veloAmp = 2;
+        veloAmp = 4;
         radiAmp = 3;
         radiColiAmp = 1;
         
-        rule1Amp = 0.2;
-        rule2Amp = 0.8;
-        rule3Amp = 0.5;
-        rule4Amp = 0;
+        rule1Amp = 0.2; %凝聚
+        rule2Amp = 0.6; %排斥
+        rule3Amp = 0.4; %速度匹配
+        rule4Amp = 0;   %朝指定方向
         
         id
         x
@@ -156,21 +156,42 @@ classdef Uno < handle
             end
         end
         
-        function [v3, w3] = rule3(obj) %速度匹配
-            if (obj.vxNeighborAverage ~= 0)&&(obj.vyNeighborAverage ~= 0)
-%                 averNorm = sqrt((obj.vNeighborAverage)^2 + (obj.wNeighborAverage)^2);
-%                 vAverDire = obj.vNeighborAverage/averNorm;
-%                 wAverDire = obj.wNeighborAverage/averNorm;
-%                 uavNorm = sqrt((obj.v)^2 + (obj.w)^2);
-%                 vDire = obj.v/uavNorm;
-%                 wDire = obj.w/uavNorm;
-%                 v3 = (obj.vNeighborAverage - obj.v)/obj.rule3Amp;
-                v3 = 0;
-                w3 = (obj.wNeighborAverage - obj.w)*obj.rule3Amp;
+%         function [v3, w3] = rule3(obj) %速度匹配(根据位置调整速度方向角）
+%             if (obj.vxNeighborAverage ~= 0)&&(obj.vyNeighborAverage ~= 0)
+% %                 averNorm = sqrt((obj.vNeighborAverage)^2 + (obj.wNeighborAverage)^2);
+% %                 vAverDire = obj.vNeighborAverage/averNorm;
+% %                 wAverDire = obj.wNeighborAverage/averNorm;
+% %                 uavNorm = sqrt((obj.v)^2 + (obj.w)^2);
+% %                 vDire = obj.v/uavNorm;
+% %                 wDire = obj.w/uavNorm;
+% %                 v3 = (obj.vNeighborAverage - obj.v)/obj.rule3Amp;
+%                 v3 = 0;
+%                 w3 = (obj.wNeighborAverage - obj.w)*obj.rule3Amp;
+% 
+%             else
+%                 v3 = 0;
+%                 w3 = 0;
+%             end
+%         end
 
-            else
-                v3 = 0;
-                w3 = 0;
+        function [vx3, vy3] = rule3(obj)%速度匹配（根据速度调整速度）
+            vx3 = 0;
+            vy3 = 0;
+
+            for i = 1:size(obj.neighborSet, 1)
+                if(obj.neighborSet(i,1) == 1)
+                    vx3diff = obj.neighborSet(i,4) - obj.vx;
+                    vy3diff = obj.neighborSet(i,5) - obj.vy;
+                    
+                    absx = abs(obj.x - obj.neighborSet(i,2));
+                    absy = abs(obj.y - obj.neighborSet(i,3));
+                    d3 = sqrt(absx^2 + absy^2);
+                    vx3align = obj.rule3Amp * vx3diff/(d3^2);
+                    vy3align = obj.rule3Amp * vy3diff/(d3^2);
+                    
+                    vx3 = vx3 + vx3align;
+                    vy3 = vy3 + vy3align;
+                end
             end
         end
         

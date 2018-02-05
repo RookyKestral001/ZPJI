@@ -5,12 +5,15 @@ classdef Flock < handle
         n
         uavs
         A
+        dock
+        time
         
         target
     end
     
     methods
         function obj = Flock(n0)
+            obj.time = 1;
             obj.n = n0;
             for i = 1:obj.n
                 obj.addUAV(Uno(i));
@@ -47,6 +50,10 @@ classdef Flock < handle
                 obj.uavs(i).yNeighborTotal = 0;        
                 obj.uavs(i).xNeighborAverage = 0;
                 obj.uavs(i).yNeighborAverage = 0;
+                obj.uavs(i).vxNeighborTotal = 0;
+                obj.uavs(i).vyNeighborTotal = 0;        
+                obj.uavs(i).vxNeighborAverage = 0;
+                obj.uavs(i).vyNeighborAverage = 0;
                 for j = 1:obj.n
                     obj.uavs(i).isNeighbor(obj.uavs(j));
                     if obj.uavs(i).neighborSet(j, 1) == 1
@@ -64,6 +71,21 @@ classdef Flock < handle
             end
         end
         
+        function saveAll(obj)
+%           dock保存内容：[time id]对应的[x y]
+            for i = 1:obj.n
+                obj.dock(obj.time, i, 1) = obj.uavs(i).x;
+                obj.dock(obj.time, i, 2) = obj.uavs(i).y;
+            end
+            obj.time = obj.time + 1;
+        end
+        
+        function drawTraj(obj)
+            [len1, len2, len3] = size(obj.dock);
+            for i = 1:len2
+                plot(obj.dock(:, i, 1), obj.dock(:, i, 2));
+            end
+        end
 %         function buildMatrix()
 %             A = zeros(n,10)
 %             
@@ -73,19 +95,22 @@ classdef Flock < handle
             for i = 1:obj.n
                 [vx1, vy1] = obj.uavs(i).rule1(); %rule1
                 [vx2, vy2] = obj.uavs(i).rule2(); %rule2
-                
-                
-                obj.uavs(i).vx = obj.uavs(i).vx + vx1 + vx2;
-                obj.uavs(i).vy = obj.uavs(i).vy + vy1 + vy2;
-                
-                [obj.uavs(i).v, obj.uavs(i).w] = transb(obj.uavs(i).vx, obj.uavs(i).vy);
+                [vx3, vy3] = obj.uavs(i).rule3(); %rule3
 
-                [v3, w3] = obj.uavs(i).rule3(); %rule3
-                obj.uavs(i).w = obj.uavs(i).w + w3;
                 
-                [v4, w4] = obj.uavs(i).rule4(obj.target); %rule4
-                obj.uavs(i).w = obj.uavs(i).w + w4;
-                [obj.uavs(i).vx, obj.uavs(i).vy] = transa(obj.uavs(i).v, obj.uavs(i).w);
+                
+                obj.uavs(i).vx = obj.uavs(i).vx + vx1 + vx2 + vx3;
+                obj.uavs(i).vy = obj.uavs(i).vy + vy1 + vy2 + vy3;
+
+                
+%                 [obj.uavs(i).v, obj.uavs(i).w] = transb(obj.uavs(i).vx, obj.uavs(i).vy);
+% 
+%                 [v3, w3] = obj.uavs(i).rule3(); %rule3
+%                 obj.uavs(i).w = obj.uavs(i).w + w3;
+%                 
+%                 [v4, w4] = obj.uavs(i).rule4(obj.target); %rule4
+%                 obj.uavs(i).w = obj.uavs(i).w + w4;
+%                 [obj.uavs(i).vx, obj.uavs(i).vy] = transa(obj.uavs(i).v, obj.uavs(i).w);
                 
                 obj.uavs(i).x = obj.uavs(i).x + obj.uavs(i).vx;
                 obj.uavs(i).y = obj.uavs(i).y + obj.uavs(i).vy;
