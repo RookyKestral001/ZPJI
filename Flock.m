@@ -7,6 +7,8 @@ classdef Flock < handle
         A
         dock
         time
+        coheMat
+        coheVal
         
         target
     end
@@ -44,6 +46,7 @@ classdef Flock < handle
         
         function drawLinks(obj)
             for i = 1:obj.n
+
                 obj.uavs(i).neighborSet = zeros(obj.n, 5);
                 obj.uavs(i).neighborNum = 0;
                 obj.uavs(i).xNeighborTotal = 0;
@@ -54,6 +57,7 @@ classdef Flock < handle
                 obj.uavs(i).vyNeighborTotal = 0;        
                 obj.uavs(i).vxNeighborAverage = 0;
                 obj.uavs(i).vyNeighborAverage = 0;
+                
                 for j = 1:obj.n
                     obj.uavs(i).isNeighbor(obj.uavs(j));
                     if obj.uavs(i).neighborSet(j, 1) == 1
@@ -68,6 +72,17 @@ classdef Flock < handle
                         plot(s, h, 'r-');
                     end
                 end
+                
+                if obj.uavs(i).rank == 2
+                    obj.uavs(i).levelDown();
+                end
+
+                obj.uavs(i).isLiderazgo();
+                
+                if obj.uavs(i).isLid == 1
+                    obj.uavs(i).levelUp();
+                    plot(obj.uavs(i).x, obj.uavs(i).y, 'o');
+                end
             end
         end
         
@@ -76,12 +91,15 @@ classdef Flock < handle
             for i = 1:obj.n
                 obj.dock(obj.time, i, 1) = obj.uavs(i).x;
                 obj.dock(obj.time, i, 2) = obj.uavs(i).y;
+                obj.dock(obj.time, i, 3) = obj.uavs(i).vx;
+                obj.dock(obj.time, i, 4) = obj.uavs(i).vy;
+                
             end
             obj.time = obj.time + 1;
         end
         
         function drawTraj(obj)
-            [len1, len2, len3] = size(obj.dock);
+            [len1, len2, len3] = size(obj.dock); %[时间，id，信息]
             for i = 1:len2
                 plot(obj.dock(:, i, 1), obj.dock(:, i, 2));
             end
@@ -90,7 +108,32 @@ classdef Flock < handle
 %             A = zeros(n,10)
 %             
 %         end
-       
+        function coherenceCal(obj)
+            [len1, len2, len3] = size(obj.dock);
+            for i = 1:len1 %时刻t
+                obj.coheVal(i) = 0;
+                for j = 1:len2 %飞机j
+                    for k = 1:len2 %飞机k
+                        if k ~= j
+                            vxj = obj.dock(i, j, 3);
+                            vyj = obj.dock(i, j, 4);
+                            vxk = obj.dock(i, k, 3);
+                            vyk = obj.dock(i, k, 4);
+                            vjAbs = sqrt(vxj^2 + vyj^2);
+                            vkAbs = sqrt(vxk^2 + vyk^2);
+                            obj.coheMat(i,j,k) = (vxj*vxk + vyj*vyk)/(vjAbs*vkAbs);
+                        else
+                            obj.coheMat(i,j,k) = 0;
+                        end
+                        
+                        obj.coheVal(i) = obj.coheVal(i) + obj.coheMat(i,j,k);
+                    end
+                end
+                obj.coheVal(i) = obj.coheVal(i)/(len2*(len2 - 1));
+            end            
+            plot(obj.coheVal);
+        end
+        
         function updateAll(obj)
             for i = 1:obj.n
                 [vx1, vy1] = obj.uavs(i).rule1(); %rule1

@@ -2,6 +2,7 @@ classdef Uno < handle
     properties
         disAmp = 3;
         veloAmp = 4;
+        
         radiAmp = 3;
         radiColiAmp = 1;
         
@@ -10,6 +11,9 @@ classdef Uno < handle
         rule3Amp = 0.4; %速度匹配
         rule4Amp = 0;   %朝指定方向
         
+        levelUpRadiAmp = 2;
+        levelUpRuleAmp = 2;
+        
         id
         x
         y
@@ -17,6 +21,7 @@ classdef Uno < handle
         vy 
         r
         rb
+        rank
         
         v
         w
@@ -25,9 +30,10 @@ classdef Uno < handle
 %         yDest = 10;
 %         vxDest = 3; 
 %         vyDest = 3; 
+        isLid = 0;
         
         neighborSet 
-        neighborNum = 0;
+        neighborNum = 0; 
         xNeighborTotal = 0;
         yNeighborTotal = 0;
         xNeighborAverage = 0;
@@ -43,7 +49,7 @@ classdef Uno < handle
     end
     
     methods
-        function obj = Uno(id0, x0, y0, vx0, vy0, r0, rb0)
+        function obj = Uno(id0, x0, y0, vx0, vy0, r0, rb0,rank0)
             if nargin == 0
                 obj.id = 0;
                 obj.x = rand*obj.disAmp;
@@ -52,6 +58,7 @@ classdef Uno < handle
                 obj.vy = rand*obj.veloAmp;
                 obj.r = 1*obj.radiAmp;
                 obj.rb = 1*obj.radiColiAmp;
+                obj.rank = 1;
             elseif nargin == 1
                 obj.id = id0;
                 obj.x = rand*obj.disAmp;
@@ -60,6 +67,7 @@ classdef Uno < handle
                 obj.vy = rand*obj.veloAmp;
                 obj.r = 1*obj.radiAmp;
                 obj.rb = 1*obj.radiColiAmp;
+                obj.rank = 1;
             elseif nargin == 7
                 obj.id = id0;
                 obj.x = x0;
@@ -68,6 +76,7 @@ classdef Uno < handle
                 obj.vy = vy0;
                 obj.r = r0;
                 obj.rb = rb0;
+                obj.rank = rank0;
             else
                 error('wrong input arguments');
             end
@@ -77,7 +86,7 @@ classdef Uno < handle
 %             obj.w = atan(obj.vy/obj.vx);
         end
         
-        function isNeighbor(obj, obj0) %1：邻居 2：碰撞风险            
+        function isNeighbor(obj, obj0) %1：邻居 2：碰撞风险 3：自己            
             d = sqrt((obj.x - obj0.x)^2 + (obj.y - obj0.y)^2);
             if (d>obj.rb)&&(d<obj.r)
                 obj.neighborSet(obj0.id, 1) = 1;
@@ -85,6 +94,7 @@ classdef Uno < handle
                 obj.neighborSet(obj0.id, 3) = obj0.y;                
                 obj.neighborSet(obj0.id, 4) = obj0.vx;
                 obj.neighborSet(obj0.id, 5) = obj0.vy;
+                obj.neighborSet(obj0.id, 6) = obj0.rank;
                 
                 obj.neighborNum = obj.neighborNum + 1;
                 obj.xNeighborTotal = obj.xNeighborTotal + obj0.x;
@@ -105,6 +115,7 @@ classdef Uno < handle
                 obj.neighborSet(obj0.id, 3) = obj0.y;
                 obj.neighborSet(obj0.id, 4) = obj0.vx;
                 obj.neighborSet(obj0.id, 5) = obj0.vy;
+                obj.neighborSet(obj0.id, 6) = obj0.rank;
                 
                 obj.neighborNum = obj.neighborNum + 1;
                 obj.xNeighborTotal = obj.xNeighborTotal + obj0.x;
@@ -119,9 +130,62 @@ classdef Uno < handle
                 
                 [obj.vNeighborAverage, obj.wNeighborAverage] = transb(obj.vxNeighborAverage, obj.vyNeighborAverage);
 %                 obj.wNeighborAverage = atan(obj.vyNeighborAverage/obj.vxNeighborAverage);
+            elseif d == 0
+                obj.neighborSet(obj0.id, 1) = 9;
+                obj.neighborSet(obj0.id, 2) = obj0.x;
+                obj.neighborSet(obj0.id, 3) = obj0.y;
+                obj.neighborSet(obj0.id, 4) = obj0.vx;
+                obj.neighborSet(obj0.id, 5) = obj0.vy;
+                obj.neighborSet(obj0.id, 6) = obj0.rank;
+            end
+        end
+        
+        function isLiderazgo(obj)
+            xflag = 0;
+            yflag = 0;
+            xmid = median(obj.neighborSet(:, 2));
+            ymid = median(obj.neighborSet(:, 3));
+            
+            for i = 1:(obj.neighborNum + 1)
+                if obj.x == xmid
+                    xflag = i;
+                end
+                if obj.y == ymid
+                    yflag = i;
+                end
+            end
+            
+            if (xflag == yflag)&&(xflag ~= 0)
+                obj.isLid = 1;
+            else
+                obj.isLid = 0;
             end
         end
                 
+        function levelUp(obj)
+            obj.radiAmp = obj.radiAmp * obj.levelUpRadiAmp;
+            obj.radiColiAmp = obj.radiColiAmp;
+            
+            obj.rank = 2;
+            
+            obj.rule1Amp = obj.rule1Amp / obj.levelUpRuleAmp; %凝聚
+            obj.rule2Amp = obj.rule2Amp; %排斥
+            obj.rule3Amp = obj.rule3Amp / obj.levelUpRuleAmp; %速度匹配
+            obj.rule4Amp = obj.rule4Amp;   %朝指定方向
+        end
+        
+        function levelDown(obj)
+            obj.radiAmp = obj.radiAmp / obj.levelUpRadiAmp;
+            obj.radiColiAmp = obj.radiColiAmp;
+            
+            obj.rank = 1;
+            
+            obj.rule1Amp = obj.rule1Amp * obj.levelUpRuleAmp; %凝聚
+            obj.rule2Amp = obj.rule2Amp; %排斥
+            obj.rule3Amp = obj.rule3Amp * obj.levelUpRuleAmp; %速度匹配
+            obj.rule4Amp = obj.rule4Amp;   %朝指定方向
+        end
+        
         function [vx1, vy1] = rule1(obj) %凝聚向心性
             if (obj.xNeighborAverage ~= 0)&&(obj.yNeighborAverage ~= 0)
                 vx1 = (obj.xNeighborAverage - obj.x)*obj.rule1Amp;
@@ -200,5 +264,6 @@ classdef Uno < handle
             wm = atan((targ.y - obj.y)/(targ.x - obj.x));
             w4 = (wm - obj.w)*obj.rule4Amp;
         end
+
     end
 end
